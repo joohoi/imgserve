@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/kataras/iris"
-	"imgserve/img"
 )
 
 func TxtGet(ctx *iris.Context) {
@@ -19,21 +18,36 @@ func JpgGet(ctx *iris.Context) {
 }
 
 func TxtGetFull(ctx *iris.Context) {
-	imgUUID := ctx.Param("uuid")
-	imgWidth := ctx.Param("width")
-	imgCrop := ctx.Param("crop")
-	imgFullPath, err := img.GetFullpath(Conf.Path, imgUUID)
+	// Initialize and validate UUID (image name)
+	imgReal, err := ImgConf.ExistingFromUUID(ctx.Param("uuid"))
 	if err != nil {
-		// Does not exist
+		log.Warningf("Requested image %s doesn't exist or its name is not a valid UUID v4", ctx.Param("uuid"))
 		ctx.EmitError(iris.StatusNotFound)
 		return
 	}
-	if !img.HasVariant(imgFullPath, imgWidth, imgCrop) {
+
+	// Initialize and validate requested width
+	imgWidth := ctx.Param("width")
+	if !ImgConf.ValidWidth(imgWidth) {
+		log.Warningf("Requested width %s not found for image %s", imgWidth, imgReal.Uuid)
+		ctx.EmitError(iris.StatusNotFound)
+		return
+	}
+
+	// Initialize and validate requested crop
+	imgCrop := ctx.Param("crop")
+	if !ImgConf.ValidCrop(imgCrop) {
+		log.Warningf("Requested crop %s not found for image %s", imgCrop, imgReal.Uuid)
+		ctx.EmitError(iris.StatusNotFound)
+		return
+	}
+	if !imgReal.HasVariant(imgWidth, imgCrop) {
 		// Variant does not exist
+		log.Debugf("Image %s doesn't yet have a variant in file %s", imgReal.Uuid, imgReal.GetVariantPath(imgWidth, imgCrop))
 		ctx.EmitError(iris.StatusNotFound)
 		return
 	}
-	ctx.ServeFile(img.GetVariantPath(imgFullPath, imgWidth, imgCrop), false)
+	ctx.ServeFile(imgReal.GetVariantPath(imgWidth, imgCrop), false)
 }
 
 func TxtGetNoCrop(ctx *iris.Context) {

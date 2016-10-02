@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/kataras/iris"
 	"github.com/op/go-logging"
+	"imgserve/img"
 	"os"
 )
 
@@ -18,7 +19,7 @@ var file_format = logging.MustStringFormatter(
 	`%{time:15:04:05.000} %{shortfunc} - %{level:.4s} %{id:03x} %{message}`,
 )
 
-var Conf mainConfig
+var ImgConf img.ImgConfig
 
 func main() {
 	// Setup logging
@@ -43,8 +44,8 @@ func main() {
 	logging.SetBackend(logStdoutFormatter, logFileFormatter)
 
 	log.Debug("Starting up...")
-	Conf = ReadConfig()
-	log.Debug(Conf.Path)
+	ImgConf = ReadConfig()
+	log.Debug(ImgConf.Path)
 	api := iris.New()
 	// Register handlers
 	for path, handlerfunc := range GetHandlerMap() {

@@ -2,16 +2,12 @@ package main
 
 import (
 	"github.com/BurntSushi/toml"
+	"imgserve/img"
 )
 
-type mainConfig struct {
-	Path   string
-	Widths []int
-}
-
-func ReadConfig() mainConfig {
+func ReadConfig() img.ImgConfig {
 	log.Debug("Initializing configuration")
-	var conf mainConfig
+	var conf img.ImgConfig
 	if _, err := toml.DecodeFile("config.cfg", &conf); err != nil {
 		log.Critical("Could not read configuration: ", err)
 	}
