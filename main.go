@@ -18,6 +18,8 @@ var file_format = logging.MustStringFormatter(
 	`%{time:15:04:05.000} %{shortfunc} - %{level:.4s} %{id:03x} %{message}`,
 )
 
+var Conf mainConfig
+
 func main() {
 	// Setup logging
 	logStdout := logging.NewLogBackend(os.Stdout, "", 0)
@@ -41,8 +43,8 @@ func main() {
 	logging.SetBackend(logStdoutFormatter, logFileFormatter)
 
 	log.Debug("Starting up...")
-	conf := ReadConfig()
-	log.Debug(conf.Path)
+	Conf = ReadConfig()
+	log.Debug(Conf.Path)
 	api := iris.New()
 	// Register handlers
 	for path, handlerfunc := range GetHandlerMap() {
