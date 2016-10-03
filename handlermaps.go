@@ -6,16 +6,12 @@ import (
 
 func GetHandlerMap() map[string]func(*iris.Context) {
 	return map[string]func(*iris.Context){
-		"/txt": TxtGet,
-		"/img/:uuid/:width/:crop": TxtGetFull,
-		"/img/:uuid/:width":       TxtGetNoCrop,
-		"/img/:uuid":              TxtGetOriginal,
-		"/jpg":                    JpgGet,
+		"/img/:uuid/:width/:crop": ImgGetWidthCrop,
+		"/img/:uuid/:width":       ImgGetWidth,
+		"/img/:uuid":              ImgGet,
 	}
 }
 
 func PostHandlerMap() map[string]func(*iris.Context) {
-	return map[string]func(*iris.Context){
-		"/txt": TxtPost,
-	}
+	return map[string]func(*iris.Context){}
 }

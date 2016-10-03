@@ -31,12 +31,27 @@ func (i Img) Exists() bool {
 	return false
 }
 
-func (i Img) GetVariantPath(width string, crop string) string {
+func (i Img) GetOriginalPath() string {
+	return strings.Join([]string{i.path, "/", orig, ".jpg"}, "")
+}
+
+func (i Img) GetVariantPath(width string) string {
+	return strings.Join([]string{i.path, "/", orig, delim, width, ".jpg"}, "")
+}
+
+func (i Img) GetVariantPathWithCrop(width string, crop string) string {
 	return strings.Join([]string{i.path, "/", orig, delim, width, delim, crop, ".jpg"}, "")
 }
 
-func (i Img) HasVariant(width string, crop string) bool {
-	if _, err := os.Stat(i.GetVariantPath(width, crop)); err == nil {
+func (i Img) HasVariant(width string) bool {
+	if _, err := os.Stat(i.GetVariantPath(width)); err == nil {
+		return true
+	}
+	return false
+}
+
+func (i Img) HasVariantWithCrop(width string, crop string) bool {
+	if _, err := os.Stat(i.GetVariantPathWithCrop(width, crop)); err == nil {
 		return true
 	}
 	return false

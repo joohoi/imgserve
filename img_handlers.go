@@ -1,23 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"github.com/kataras/iris"
 )
 
-func TxtGet(ctx *iris.Context) {
-	ctx.ServeFile("/tmp/iris/file.txt", true)
-}
-
-func TxtPost(ctx *iris.Context) {
-	ctx.Write("POST to txt")
-}
-
-func JpgGet(ctx *iris.Context) {
-	ctx.ServeFile("/tmp/iris/file.jpg", false)
-}
-
-func TxtGetFull(ctx *iris.Context) {
+func ImgGetWidthCrop(ctx *iris.Context) {
 	// Initialize and validate UUID (image name)
 	imgReal, err := ImgConf.ExistingFromUUID(ctx.Param("uuid"))
 	if err != nil {
@@ -41,24 +28,56 @@ func TxtGetFull(ctx *iris.Context) {
 		ctx.EmitError(iris.StatusNotFound)
 		return
 	}
-	if !imgReal.HasVariant(imgWidth, imgCrop) {
+	if !imgReal.HasVariantWithCrop(imgWidth, imgCrop) {
 		// Variant does not exist
-		log.Debugf("Image %s doesn't yet have a variant in file %s", imgReal.Uuid, imgReal.GetVariantPath(imgWidth, imgCrop))
+		log.Debugf("Image %s doesn't yet have a variant in file %s, trying to create it.", imgReal.Uuid, imgReal.GetVariantPathWithCrop(imgWidth, imgCrop))
+		err := imgReal.MakeVariantWithCrop(imgWidth, imgCrop)
+		if err != nil {
+			log.Warningf("Could not create variant: %v", err)
+			ctx.EmitError(iris.StatusNotFound)
+			return
+		}
+	}
+	ctx.ServeFile(imgReal.GetVariantPathWithCrop(imgWidth, imgCrop), false)
+}
+
+func ImgGetWidth(ctx *iris.Context) {
+	// Initialize and validate UUID (image name)
+	imgReal, err := ImgConf.ExistingFromUUID(ctx.Param("uuid"))
+	if err != nil {
+		log.Warningf("Requested image %s doesn't exist or its name is not a valid UUID v4", ctx.Param("uuid"))
 		ctx.EmitError(iris.StatusNotFound)
 		return
 	}
-	ctx.ServeFile(imgReal.GetVariantPath(imgWidth, imgCrop), false)
-}
 
-func TxtGetNoCrop(ctx *iris.Context) {
-	imgUUID := ctx.Param("uuid")
+	// Initialize and validate requested width
 	imgWidth := ctx.Param("width")
-	retString := fmt.Sprintf("NoCrop: This is image %s with width %s and crop %s", imgUUID, imgWidth)
-	ctx.Write(retString)
+	if !ImgConf.ValidWidth(imgWidth) {
+		log.Warningf("Requested width %s not found for image %s", imgWidth, imgReal.Uuid)
+		ctx.EmitError(iris.StatusNotFound)
+		return
+	}
+
+	if !imgReal.HasVariant(imgWidth) {
+		// Variant does not exist
+		log.Debugf("Image %s doesn't yet have a variant in file %s, trying to create it.", imgReal.Uuid, imgReal.GetVariantPath(imgWidth))
+		err := imgReal.MakeVariant(imgWidth)
+		if err != nil {
+			log.Warningf("Could not create variant: %v", err)
+			ctx.EmitError(iris.StatusNotFound)
+			return
+		}
+	}
+	ctx.ServeFile(imgReal.GetVariantPath(imgWidth), false)
 }
 
-func TxtGetOriginal(ctx *iris.Context) {
-	imgUUID := ctx.Param("uuid")
-	retString := fmt.Sprintf("Original: This is image %s", imgUUID)
-	ctx.Write(retString)
+func ImgGet(ctx *iris.Context) {
+	// Initialize and validate UUID (image name)
+	imgReal, err := ImgConf.ExistingFromUUID(ctx.Param("uuid"))
+	if err != nil {
+		log.Warningf("Requested image %s doesn't exist or its name is not a valid UUID v4", ctx.Param("uuid"))
+		ctx.EmitError(iris.StatusNotFound)
+		return
+	}
+	ctx.ServeFile(imgReal.GetOriginalPath(), false)
 }
