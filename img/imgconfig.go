@@ -10,14 +10,7 @@ import (
 type ImgConfig struct {
 	Path   string
 	Widths []int64
-	Crops  map[string]crop
-}
-
-type crop struct {
-	Width      int64
-	Height     int64
-	AnchorTop  int64
-	AnchorLeft int64
+	Crops  []string
 }
 
 func (i ImgConfig) NewImg() Img {
@@ -58,5 +51,12 @@ func (i ImgConfig) ValidWidth(width string) bool {
 }
 
 func (i ImgConfig) ValidCrop(crop string) bool {
-	return true
+	if len(i.Crops) > 0 {
+		for _, v := range i.Crops {
+			if v == crop {
+				return true
+			}
+		}
+	}
+	return false
 }
