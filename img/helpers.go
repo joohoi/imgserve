@@ -2,10 +2,19 @@ package img
 
 import (
 	"math"
-	"string"
+	"strconv"
+	"strings"
 )
 
-func CropHeight(width int, crop string) int {
-	cropRatio := string.Split(crop, "x")
-	return int(math.Floor(float64(width) / (float64(cropRatio[0]) / float64(cropRatio[1]))))
+func CropHeight(width int, crop string) (int, error) {
+	cropRatio := strings.Split(crop, "x")
+	cropX, err := strconv.ParseInt(cropRatio[0], 10, 0)
+	if err != nil {
+		return 0, nil
+	}
+	cropY, err := strconv.ParseInt(cropRatio[1], 10, 0)
+	if err != nil {
+		return 0, nil
+	}
+	return int(math.Floor(float64(width) / (float64(cropX) / float64(cropY)))), nil
 }

@@ -2,6 +2,7 @@ package img
 
 import (
 	"github.com/disintegration/imaging"
+	"image"
 	"strconv"
 )
 
@@ -23,25 +24,30 @@ func (i Img) MakeVariant(width string) error {
 }
 
 func (i Img) MakeVariantWithCrop(width string, crop string) error {
+	var newVariant *image.NRGBA
 	data, err := imaging.Open(i.GetOriginalPath())
 	if err != nil {
 		return err
 	}
-	crop_width, err := strconv.ParseInt(width, 10, 0)
+	crop_widthInt, err := strconv.ParseInt(width, 10, 0)
 	if err != nil {
 		return err
 	}
+	crop_width := int(crop_widthInt)
 	bounds := data.Bounds()
 	orig_width := bounds.Max.X
 	orig_height := bounds.Max.Y
-	crop_height := CropHeight(crop_width, crop)
+	crop_height, err := CropHeight(crop_width, crop)
+	if err != nil {
+		return err
+	}
 	// Get the actual crop values
-	if (orig_width < widthInt) || (orig_height < crop_height) {
-		newVariant := imaging.Fill(data, crop_width, crop_height, imaging.Center, imaging.Lanczos)
+	if (orig_width < crop_width) || (orig_height < crop_height) {
+		newVariant = imaging.Fill(data, crop_width, crop_height, imaging.Center, imaging.Lanczos)
 	} else {
 		// TODO: get user specified crop size from database
 		// and use Crop(img image.Image, rect image.Rectangle) *image.NRGBA
-		newVariant := imaging.CropAnchor(data, crop_width, crop_height, imaging.Center)
+		newVariant = imaging.CropAnchor(data, crop_width, crop_height, imaging.Center)
 	}
 	err = imaging.Save(newVariant, i.GetVariantPathWithCrop(width, crop))
 	if err != nil {
