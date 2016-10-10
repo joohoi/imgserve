@@ -20,6 +20,7 @@ func (i ImgConfig) NewImg() Img {
 	}
 }
 
+// TODO: remove this and make assumption the file exists
 func (i ImgConfig) ExistingFromUUID(imgUuid string) (Img, error) {
 	realUuid, err := uuid.FromString(imgUuid)
 	if err != nil {

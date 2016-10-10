@@ -44,7 +44,11 @@ func main() {
 	logging.SetBackend(logStdoutFormatter, logFileFormatter)
 
 	log.Debug("Starting up...")
-	ImgConf = ReadConfig()
+	ImgConf, err = img.ReadConfig("config.cfg")
+	if err != nil {
+		log.Critical(err)
+		os.Exit(1)
+	}
 	log.Debug(ImgConf.Path)
 	api := iris.New()
 	// Register handlers

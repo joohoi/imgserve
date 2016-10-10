@@ -3,13 +3,19 @@ package img
 import (
 	"errors"
 	"github.com/satori/go.uuid"
+	"image"
 	"os"
 	"strings"
 )
 
 type Img struct {
-	Uuid uuid.UUID
-	path string
+	Uuid     uuid.UUID                  `db:"uuid"`
+	Filename string                     `db:"filename"`
+	Mimetype string                     `db:"mimetype"`
+	Width    int                        `db:"width"`
+	Height   int                        `db:"height"`
+	path     string                     `db:"path"`
+	Crops    map[string]image.Rectangle `db:"crops"`
 }
 
 var orig string = "original"
